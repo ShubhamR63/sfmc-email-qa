@@ -10,7 +10,7 @@
     "qa": "node src/cli.js",
     "build:web": "node scripts/build-web.js",
     "web": "node scripts/build-web.js && node scripts/open-web.js",
-    "test": "node --test test/"
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18"
