@@ -1,0 +1,21 @@
+{
+  "name": "sfmc-email-qa",
+  "version": "1.0.0",
+  "description": "Platform-independent HTML email QA audit for Salesforce Marketing Cloud (HREF, SRC, alias, ALT, tracking codes, content blocks, unsubscribe, HTTPS).",
+  "main": "src/audit.js",
+  "bin": {
+    "sfmc-email-qa": "src/cli.js"
+  },
+  "scripts": {
+    "qa": "node src/cli.js",
+    "build:web": "node scripts/build-web.js",
+    "web": "node scripts/build-web.js && node scripts/open-web.js",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["sfmc", "email", "qa", "ampscript", "marketing-cloud"],
+  "author": "Shubham Rajole",
+  "license": "UNLICENSED"
+}

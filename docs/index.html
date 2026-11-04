@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Shubham Rajole">
+<title>SFMC Email QA | Shubham Rajole</title>
+<style>
+  :root {
+    --bg:#eef2f9; --bg2:#e3e9f5; --card:#ffffff; --line:#dde3ee; --text:#18202e; --muted:#5b6679;
+    --accent:#4f46e5; --accent2:#0ea5e9; --accent3:#a855f7;
+    --fail:#dc2626; --failbg:#fee2e2; --warn:#b45309; --warnbg:#fef3c7; --ok:#15803d; --okbg:#dcfce7;
+    --info:#475569; --infobg:#e2e8f0; --th:#f1f4fb; --hover:#f7f9fe; --code:#eef1f8; --shadow:0 10px 30px rgba(31,41,90,.10);
+    --radius:16px;
+  }
+  [data-theme="dark"] {
+    --bg:#0b1020; --bg2:#10172b; --card:#141b30; --line:#252f4b; --text:#e6ebf7; --muted:#97a3bd;
+    --failbg:#4a1d1d; --warnbg:#463213; --okbg:#13402a; --infobg:#27324d; --info:#b6c2da;
+    --fail:#f87171; --warn:#fbbf24; --ok:#4ade80; --th:#1a2340; --hover:#18213b; --code:#1d2745; --shadow:0 10px 30px rgba(0,0,0,.45);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font:14px/1.55 "Segoe UI",-apple-system,system-ui,Roboto,sans-serif; color:var(--text);
+         background:radial-gradient(1200px 500px at 10% -10%, rgba(79,70,229,.14), transparent 60%),
+                    radial-gradient(900px 500px at 100% 0%, rgba(14,165,233,.14), transparent 55%), var(--bg);
+         background-attachment:fixed; min-height:100vh; display:flex; flex-direction:column; transition:background .3s, color .3s; }
+
+  /* ---------- hero ---------- */
+  header.hero { position:relative; overflow:hidden; color:#fff; padding:34px 24px 74px;
+                background:linear-gradient(120deg,#1e1b4b 0%,#312e81 35%,#4f46e5 70%,#0ea5e9 120%); background-size:200% 200%;
+                animation:flow 14s ease-in-out infinite; }
+  header.hero::before, header.hero::after { content:""; position:absolute; border-radius:50%; filter:blur(50px); opacity:.45; pointer-events:none; }
+  header.hero::before { width:360px; height:360px; background:#a855f7; top:-140px; right:8%; animation:float 9s ease-in-out infinite; }
+  header.hero::after  { width:300px; height:300px; background:#22d3ee; bottom:-170px; left:12%; animation:float 11s ease-in-out infinite reverse; }
+  .hero-in { position:relative; z-index:1; max-width:1400px; margin:0 auto; display:flex; gap:20px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .brand { display:flex; gap:16px; align-items:center; }
+  .logo { width:58px; height:58px; border-radius:16px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.35);
+          display:grid; place-items:center; backdrop-filter:blur(6px); box-shadow:0 8px 24px rgba(0,0,0,.25); }
+  .logo svg { width:32px; height:32px; }
+  .brand h1 { margin:0; font-size:28px; font-weight:800; letter-spacing:-.3px; }
+  .brand h1 span { background:linear-gradient(90deg,#fde68a,#67e8f9); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .brand p { margin:2px 0 0; color:#dbe4ff; font-size:13.5px; max-width:640px; }
+  .owner { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+  .owner-chip { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3);
+                padding:7px 16px 7px 8px; border-radius:999px; backdrop-filter:blur(6px); }
+  .avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#f59e0b,#ef4444); display:grid; place-items:center; font-weight:800; font-size:13px; }
+  .owner-chip small { display:block; font-size:10.5px; color:#cbd5ff; text-transform:uppercase; letter-spacing:.8px; line-height:1.1; }
+  .owner-chip b { font-size:14.5px; }
+  .badges { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+  .badge { font-size:11.5px; padding:3px 10px; border-radius:999px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); }
+  #theme { background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.35); color:#fff; padding:5px 12px; border-radius:999px; font-size:12px; }
+
+  /* ---------- layout ---------- */
+  main { flex:1; width:100%; max-width:1400px; margin:-46px auto 0; padding:0 24px 40px; position:relative; z-index:2; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px; margin-bottom:20px;
+          box-shadow:var(--shadow); animation:rise .5s ease both; }
+  .card-title { display:flex; align-items:center; gap:10px; margin:0 0 12px; font-size:15px; font-weight:700; }
+  .dot { width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 0 0 4px rgba(79,70,229,.15); }
+  .card-title .spacer { flex:1; }
+
+  textarea { width:100%; height:300px; font:12.5px/1.5 "Cascadia Code",Consolas,Menlo,monospace; padding:14px; color:var(--text);
+             background:var(--code); border:1.5px solid var(--line); border-radius:12px; resize:vertical; white-space:pre; overflow:auto;
+             outline:none; transition:border-color .2s, box-shadow .2s, background .3s; }
+  textarea:focus { border-color:var(--accent); box-shadow:0 0 0 4px rgba(79,70,229,.15); }
+  .bar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+  button, .btn { font:inherit; font-weight:600; padding:9px 18px; border:1.5px solid var(--line); background:var(--card); border-radius:10px;
+                 cursor:pointer; color:var(--text); transition:transform .15s, box-shadow .15s, border-color .15s, background .15s; }
+  button:hover, .btn:hover { transform:translateY(-2px); border-color:var(--accent); box-shadow:0 6px 16px rgba(79,70,229,.18); }
+  button:active { transform:translateY(0); }
+  button.primary { color:#fff; border:0; padding:10px 24px; background:linear-gradient(135deg,var(--accent),var(--accent2));
+                   box-shadow:0 8px 20px rgba(79,70,229,.35); }
+  button.primary:hover { box-shadow:0 12px 26px rgba(79,70,229,.45); }
+  button.on { color:#fff; border-color:transparent; background:linear-gradient(135deg,#4338ca,#6366f1); }
+  label.opt { color:var(--muted); display:flex; gap:7px; align-items:center; cursor:pointer; }
+  label.opt input { accent-color:var(--accent); width:16px; height:16px; }
+  .hint { color:var(--muted); font-size:12px; }
+  kbd { font:11px Consolas,monospace; background:var(--code); border:1px solid var(--line); border-bottom-width:2px; padding:1px 6px; border-radius:5px; }
+  .grow { flex:1; }
+
+  /* ---------- verdict + dashboard ---------- */
+  #verdict { display:none; align-items:center; gap:16px; padding:16px 20px; border-radius:14px; margin-bottom:16px; animation:pop .4s ease both; }
+  #verdict.PASS, #verdict.FAIL { display:flex; }
+  #verdict.PASS { background:linear-gradient(120deg,#16a34a,#22c55e); color:#fff; box-shadow:0 10px 24px rgba(22,163,74,.35); }
+  #verdict.FAIL { background:linear-gradient(120deg,#dc2626,#f97316); color:#fff; box-shadow:0 10px 24px rgba(220,38,38,.35); }
+  #verdict .icon { width:46px; height:46px; border-radius:50%; background:rgba(255,255,255,.25); display:grid; place-items:center; font-size:26px; font-weight:800; flex:none; }
+  #verdict .big { font-size:20px; font-weight:800; letter-spacing:.3px; }
+  #verdict .sub { font-size:13px; opacity:.92; }
+
+  #dash { display:none; }
+  #dash.on { display:block; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:14px; }
+  .stat { position:relative; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 14px 12px; overflow:hidden; animation:rise .5s ease both; }
+  .stat::before { content:""; position:absolute; left:0; top:0; right:0; height:4px; background:var(--c,var(--accent)); }
+  .stat b { display:block; font-size:30px; line-height:1.1; font-weight:800; color:var(--c,var(--accent)); }
+  .stat span { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
+  .stat.fail { --c:var(--fail); } .stat.warn { --c:var(--warn); } .stat.pass { --c:var(--ok); }
+  .stat.a { --c:#4f46e5; } .stat.b { --c:#0ea5e9; } .stat.c { --c:#a855f7; }
+  .checks { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:8px; }
+  .chk { display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:var(--hover); font-size:13px; }
+  .chk .nm { flex:1; }
+  .chk .ct { font-weight:700; color:var(--muted); }
+  .pill { font-size:10.5px; font-weight:800; letter-spacing:.6px; padding:2px 9px; border-radius:999px; }
+  .pill.PASS { background:var(--okbg); color:var(--ok); } .pill.FAIL { background:var(--failbg); color:var(--fail); }
+  .pill.WARN { background:var(--warnbg); color:var(--warn); } .pill.INFO { background:var(--infobg); color:var(--info); }
+
+  /* ---------- report ---------- */
+  #report h1 { font-size:22px; margin:0 0 8px; }
+  #report h2 { font-size:17px; margin:30px 0 10px; padding:10px 14px; border-radius:10px; background:linear-gradient(90deg,var(--th),transparent); border-left:5px solid var(--accent); }
+  #report h3 { font-size:14px; margin:16px 0 4px; color:var(--accent); }
+  #report .tablewrap { overflow-x:auto; margin:8px 0 12px; border:1px solid var(--line); border-radius:12px; }
+  #report table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  #report th, #report td { padding:8px 11px; text-align:left; vertical-align:top; word-break:break-word; border-bottom:1px solid var(--line); }
+  #report th { background:var(--th); white-space:nowrap; font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); position:sticky; top:0; }
+  #report tbody tr:nth-child(even) td { background:var(--hover); }
+  #report tbody tr:hover td { background:rgba(79,70,229,.09); }
+  #report tr:last-child td { border-bottom:0; }
+  #report code { font:12px "Cascadia Code",Consolas,Menlo,monospace; background:var(--code); padding:2px 6px; border-radius:6px; }
+  #report pre { background:#0f172a; color:#e2e8f0; padding:14px 16px; border-radius:12px; overflow:auto; border-left:5px solid var(--accent3); }
+  #report ul { margin:4px 0 8px; padding-left:22px; }
+  #report strong { color:var(--fail); }
+  #report h1 strong, #report h2 strong { color:inherit; }
+  #report .FAIL, #report .WARN, #report .PASS, #report .INFO { font-size:10.5px; letter-spacing:.5px; padding:2px 8px; border-radius:999px; font-weight:800; white-space:nowrap; }
+  #report .FAIL { background:var(--failbg); color:var(--fail); } #report .WARN { background:var(--warnbg); color:var(--warn); }
+  #report .PASS { background:var(--okbg); color:var(--ok); } #report .INFO { background:var(--infobg); color:var(--info); }
+  #empty { color:var(--muted); text-align:center; padding:34px 10px; }
+  #empty svg { width:56px; height:56px; opacity:.5; display:block; margin:0 auto 8px; }
+
+  /* ---------- preview ---------- */
+  #preview { display:none; }
+  #preview.on { display:block; }
+  #preview .head { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+  #preview .head b { flex:1; font-size:15px; }
+  #frameWrap { background:repeating-conic-gradient(var(--bg2) 0% 25%, var(--bg) 0% 50%) 0 0/22px 22px; padding:18px; border-radius:12px; overflow:auto; }
+  #frame { display:block; margin:0 auto; width:100%; height:650px; border:1px solid var(--line); border-radius:8px; background:#fff;
+           resize:vertical; box-shadow:0 14px 34px rgba(0,0,0,.18); transition:width .3s ease; }
+  #frame.mobile { width:375px; }
+
+  /* ---------- footer ---------- */
+  footer { margin-top:auto; color:#cbd5ff; background:linear-gradient(120deg,#1e1b4b,#312e81 60%,#0369a1); padding:0; position:relative; }
+  footer::before { content:""; display:block; height:4px; background:linear-gradient(90deg,#f59e0b,#ef4444,#a855f7,#22d3ee,#22c55e); }
+  .foot-in { max-width:1400px; margin:0 auto; padding:20px 24px; display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .foot-in b { color:#fff; }
+  .foot-in .rights { font-size:13.5px; }
+  #rightsBtn { background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.35); padding:6px 16px; border-radius:999px; font-size:12.5px; }
+  #rightsBtn:hover { background:rgba(255,255,255,.26); }
+  #rightsPanel { display:none; max-width:1400px; margin:0 auto; padding:0 24px 20px; font-size:12.5px; color:#dbe4ff; }
+  #rightsPanel.on { display:block; animation:rise .3s ease both; }
+  #rightsPanel div { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); border-radius:12px; padding:14px 18px; max-width:900px; }
+
+  @keyframes flow { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
+  @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(24px); } }
+  @keyframes rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  @keyframes pop { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:none; } }
+  @media (max-width:720px) { .owner { align-items:flex-start; } .badges { justify-content:flex-start; } .brand h1 { font-size:22px; } }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-in">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/><path d="M8.5 17.5l2.2 2.2 4.3-4.6" stroke="#fde68a"/>
+        </svg>
+      </div>
+      <div>
+        <h1>SFMC <span>Email QA</span></h1>
+        <p>Paste your email HTML with AMPscript, run a complete audit of HREF, SRC, alias, ALT, tracking, content blocks, unsubscribe and HTTPS, and preview the result.</p>
+      </div>
+    </div>
+    <div class="owner">
+      <div class="owner-chip">
+        <div class="avatar">SR</div>
+        <div><small>Created by</small><b>Shubham Rajole</b></div>
+      </div>
+      <div class="badges">
+        <span class="badge">10 QA checks</span>
+        <span class="badge">100% local - nothing uploaded</span>
+        <button id="theme" type="button">Dark mode</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2 class="card-title"><span class="dot"></span>Email HTML code</h2>
+    <textarea id="src" spellcheck="false" placeholder="Paste your email HTML code here..."></textarea>
+    <div class="bar">
+      <button class="primary" id="run">Run QA</button>
+      <button id="previewBtn">Preview</button>
+      <button id="clear">Clear</button>
+      <label class="btn">Open .html file...<input type="file" id="file" accept=".html,.htm,.txt" hidden></label>
+      <label class="opt"><input type="checkbox" id="strict"> Strict (warnings fail)</label>
+      <span class="grow"></span>
+      <span class="hint">Shortcut: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+    </div>
+  </div>
+
+  <div class="card" id="preview">
+    <div class="head">
+      <b><span class="dot" style="display:inline-block;margin-right:10px"></span>Preview</b>
+      <button id="vDesktop" class="on">Desktop</button>
+      <button id="vMobile">Mobile (375px)</button>
+      <button id="vClose">Close</button>
+    </div>
+    <div id="frameWrap"><iframe id="frame" sandbox="allow-same-origin" title="Email preview"></iframe></div>
+    <p class="hint">Scripts are blocked and links are disabled. AMPscript is hidden, not executed: its output (personalisation, content blocks such as the footer) does not appear, and AMPscript links become <code>#</code>. Rendering is your browser's, not an email client's. Images are shrunk to fit, and an email wider than the frame is scaled down.</p>
+  </div>
+
+  <div class="card" id="out">
+    <h2 class="card-title"><span class="dot"></span>QA report<span class="spacer"></span></h2>
+    <div id="verdict"></div>
+    <div id="dash"><div class="stats" id="stats"></div><div class="checks" id="checks"></div></div>
+    <div class="bar" id="actions" style="display:none">
+      <button id="copy">Copy report (Markdown)</button>
+      <button id="dl">Download .md</button>
+      <button id="dljson">Download .json</button>
+    </div>
+    <div id="report"><div id="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+      Paste your email code above and click <b>Run QA</b> - the report will appear here.
+    </div></div>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-in">
+    <div class="rights">&copy; <span id="year">2025</span> <b>Shubham Rajole</b>. All Rights Reserved.</div>
+    <button id="rightsBtn" type="button">All Rights Reserved</button>
+  </div>
+  <div id="rightsPanel"><div>
+    <b>&copy; <span id="year2">2025</span> Shubham Rajole. All Rights Reserved.</b><br>
+    SFMC Email QA, including its design, source code, documentation and reports, is the property of Shubham Rajole.
+    No part of it may be copied, modified, distributed or used commercially without prior written permission from the owner.
+    The tool runs entirely in your browser; the email code you paste is processed locally and is never uploaded or stored.
+  </div></div>
+</footer>
+
+<script>
+var __defs = {}, __cache = {};
+function __require(p) {
+  var n = p.replace(/^\.\//, '');
+  if (!__cache[n]) { var m = { exports: {} }; __cache[n] = m; __defs[n](m, __require); }
+  return __cache[n].exports;
+}
+__defs["parser"] = function (module, require) {
+'use strict';
+
+/**
+ * Minimal, dependency-free HTML scanner tuned for SFMC emails.
+ *
+ * Why not a generic HTML parser? SFMC templates contain AMPscript such as
+ *   href="%%=RedirectTo(concat("https://", @host))=%%"
+ * whose nested quotes break normal HTML parsers. This scanner treats
+ * AMPscript expressions as atomic inside attribute values.
+ *
+ * All transformations keep the string length identical so that positions
+ * (and therefore line numbers) always map back to the original source.
+ */
+
+const blank = (s) => s.replace(/[^\r\n]/g, ' ');
+
+/** Blank out HTML comments but keep the content of Outlook conditional comments. */
+function stripComments(html) {
+  return html
+    .replace(/<!--\s*\[if[^\]]*\]>(?:<!-->)?/gi, blank)
+    .replace(/(?:<!--)?<!\[endif\]-->/gi, blank)
+    .replace(/<!--[\s\S]*?-->/g, blank);
+}
+
+/** Blank out AMPscript blocks (%%[ ... ]%%) so their contents are not parsed as HTML. */
+function maskAmpscriptBlocks(text) {
+  return text.replace(/%%\[[\s\S]*?\]%%/g, blank);
+}
+
+/** Return the index just after the AMPscript atom that starts at position i. */
+function skipAtom(s, i) {
+  if (s.startsWith('%%=', i)) {
+    const end = s.indexOf('=%%', i + 3);
+    return end < 0 ? s.length : end + 3;
+  }
+  if (s.startsWith('%%[', i)) {
+    const end = s.indexOf(']%%', i + 3);
+    return end < 0 ? s.length : end + 3;
+  }
+  const end = s.indexOf('%%', i + 2);
+  return end < 0 ? i + 2 : end + 2;
+}
+
+function parseTag(s, start) {
+  let i = start + 1;
+  const closing = s[i] === '/';
+  if (closing) i++;
+  let j = i;
+  while (j < s.length && /[A-Za-z0-9:_-]/.test(s[j])) j++;
+  const name = s.slice(i, j).toLowerCase();
+  i = j;
+
+  const attrs = [];
+  let selfClosing = false;
+
+  while (i < s.length) {
+    while (i < s.length && /\s/.test(s[i])) i++;
+    if (i >= s.length) break;
+    if (s[i] === '>') { i++; break; }
+    if (s[i] === '/' && s[i + 1] === '>') { selfClosing = true; i += 2; break; }
+    if (s[i] === '/') { i++; continue; }
+
+    const nameStart = i;
+    if (s.startsWith('%%', i)) {
+      i = skipAtom(s, i);
+      attrs.push({ name: s.slice(nameStart, i), value: '' });
+      continue;
+    }
+    while (i < s.length && !/[\s=>]/.test(s[i]) && !(s[i] === '/' && s[i + 1] === '>')) i++;
+    const attrName = s.slice(nameStart, i);
+
+    let k = i;
+    while (k < s.length && /\s/.test(s[k])) k++;
+    if (s[k] !== '=') {
+      attrs.push({ name: attrName, value: '' });
+      continue;
+    }
+    i = k + 1;
+    while (i < s.length && /\s/.test(s[i])) i++;
+
+    let value;
+    if (s[i] === '"' || s[i] === "'") {
+      const quote = s[i++];
+      const valueStart = i;
+      while (i < s.length && s[i] !== quote) {
+        i = s.startsWith('%%', i) ? skipAtom(s, i) : i + 1;
+      }
+      value = s.slice(valueStart, i);
+      i++; // closing quote
+    } else {
+      const valueStart = i;
+      while (i < s.length && !/[\s>]/.test(s[i])) {
+        i = s.startsWith('%%', i) ? skipAtom(s, i) : i + 1;
+      }
+      value = s.slice(valueStart, i);
+    }
+    attrs.push({ name: attrName, value });
+  }
+
+  return { name, closing, attrs, selfClosing, start, end: i };
+}
+
+/** Return every start/end tag in document order. Script/style bodies are skipped. */
+function scanTags(s) {
+  const tags = [];
+  let i = 0;
+  while (i < s.length) {
+    if (s.startsWith('%%=', i)) { i = skipAtom(s, i); continue; }
+    if (s[i] !== '<') { i++; continue; }
+    if (!/^<\/?[A-Za-z]/.test(s.substr(i, 3))) { i++; continue; }
+
+    const tag = parseTag(s, i);
+    tags.push(tag);
+    i = tag.end;
+
+    if (!tag.closing && (tag.name === 'script' || tag.name === 'style')) {
+      const closer = new RegExp('</' + tag.name, 'ig');
+      closer.lastIndex = i;
+      const m = closer.exec(s);
+      i = m ? m.index : s.length;
+    }
+  }
+  return tags;
+}
+
+/** Case-insensitive attribute lookup. Returns undefined when the attribute is absent. */
+function attr(tag, name) {
+  const a = tag.attrs.find((x) => x.name.toLowerCase() === name);
+  return a ? a.value : undefined;
+}
+
+/** Returns a function mapping a character offset to a 1-based line number. */
+function makeLineLookup(text) {
+  const starts = [0];
+  for (let i = 0; i < text.length; i++) if (text[i] === '\n') starts.push(i + 1);
+  return (pos) => {
+    let lo = 0;
+    let hi = starts.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (starts[mid] <= pos) lo = mid; else hi = mid - 1;
+    }
+    return lo + 1;
+  };
+}
+
+module.exports = { stripComments, maskAmpscriptBlocks, scanTags, attr, makeLineLookup };
+
+};
+__defs["audit"] = function (module, require) {
+'use strict';
+
+const {
+  stripComments, maskAmpscriptBlocks, scanTags, attr, makeLineLookup,
+} = require('./parser');
+
+const MISSING = 'Missing';
+const TEXT_LINK = 'Missing / Text Link';
+
+const AMP_ATOM = /%%=[\s\S]*?=%%|%%[A-Za-z_]\w*%%/g;
+
+const PLACEHOLDER_ALTS = [
+  /^(image|img|photo|picture|pic|graphic|icon|logo|banner|spacer|alt|alt ?text|text|link|button|cta)$/i,
+  /^(placeholder|untitled|undefined|null|none|n\/a|na|tbd|todo|xxx+|test|sample|dummy|default)$/i,
+  /^(insert|enter|add|your)\b.*\b(alt|text|description)\b/i,
+  /lorem ipsum/i,
+  /\.(jpe?g|png|gif|webp|svg|bmp)$/i,
+  /^(image|img|dsc|screenshot)[-_ ]?\d+/i,
+];
+
+const TRACKING_CODES = ['opencounter', 'usermatch'];
+const UNSUB_REQUIRED_TEXT = [
+  'Add Unsub block:',
+  '%%=ContentBlockByKey("xxxxxxxxxx")=%%',
+  'or',
+  '%%=ContentBlockByID(xxxxxx)=%%',
+  '',
+  'href="%%=RedirectTo(@urlOrganic)=%%"',
+  'alias="unsubscribe"',
+].join('\n');
+
+const issue = (level, msg) => ({ level, msg });
+
+/* ------------------------------------------------------------------ */
+/* URL classification                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Classify an href/src value.
+ * kind: empty | ampscript | https | http | mailto | tel | sms | data | invalid
+ */
+function classifyUrl(raw) {
+  const value = raw === undefined ? '' : raw.trim();
+  if (value === '') return { kind: 'empty' };
+
+  const hasAmp = /%%/.test(value);
+  const rest = value.replace(AMP_ATOM, 'AMP');
+  if (hasAmp && /%%/.test(rest)) {
+    return { kind: 'invalid', reason: 'Unbalanced or malformed AMPscript expression' };
+  }
+  // A value that starts with an AMPscript expression is generated at send
+  // time, so its scheme cannot be validated statically.
+  if (/^%%/.test(value)) return { kind: 'ampscript' };
+
+  if (/\s/.test(rest)) return { kind: 'invalid', reason: 'Contains whitespace' };
+  if (/^https:\/\/[^/?#]+/i.test(rest)) return { kind: 'https' };
+  if (/^http:\/\/[^/?#]+/i.test(rest)) return { kind: 'http' };
+  if (/^mailto:\S+/i.test(rest)) return { kind: 'mailto' };
+  if (/^tel:\S+/i.test(rest)) return { kind: 'tel' };
+  if (/^sms:\S+/i.test(rest)) return { kind: 'sms' };
+  if (/^data:/i.test(rest)) return { kind: 'data' };
+  if (/^https?:\/\/?$/i.test(rest) || /^https?:\/\/[/?#]/i.test(rest)) {
+    return { kind: 'invalid', reason: 'No host name' };
+  }
+  if (rest === '#') return { kind: 'invalid', reason: 'Placeholder "#" link' };
+  if (/^javascript:/i.test(rest)) return { kind: 'invalid', reason: 'javascript: URL' };
+  if (/^[a-z][a-z0-9+.-]*:/i.test(rest)) {
+    return { kind: 'invalid', reason: 'Unsupported scheme "' + rest.split(':')[0] + ':"' };
+  }
+  return { kind: 'invalid', reason: 'Not an absolute URL (relative or malformed)' };
+}
+
+function isHidden(tag) {
+  const style = (attr(tag, 'style') || '').replace(/\s+/g, '').toLowerCase();
+  return attr(tag, 'hidden') !== undefined
+    || /display:none|visibility:hidden|font-size:0(px)?(;|$)|mso-hide:all/.test(style);
+}
+
+/* ------------------------------------------------------------------ */
+/* Extraction                                                          */
+/* ------------------------------------------------------------------ */
+
+function extractLinksAndImages(tags, lineOf) {
+  const hrefs = [];
+  const srcs = [];
+  let openAnchor = null;
+
+  const addSrc = (tag, src, type) => {
+    const entry = {
+      type,
+      src,
+      srcPresent: src !== undefined,
+      alt: type === 'img' ? attr(tag, 'alt') : undefined,
+      line: lineOf(tag.start),
+      anchor: openAnchor,
+      hidden: isHidden(tag),
+    };
+    srcs.push(entry);
+    if (openAnchor) openAnchor.images.push(entry);
+  };
+
+  for (const tag of tags) {
+    if (tag.closing) {
+      if (tag.name === 'a') openAnchor = null;
+      continue;
+    }
+
+    if (tag.name === 'a' || tag.name === 'area') {
+      const href = attr(tag, 'href');
+      const alias = attr(tag, 'alias');
+      const entry = {
+        tag: tag.name,
+        href,
+        hrefPresent: href !== undefined,
+        alias,
+        line: lineOf(tag.start),
+        hidden: isHidden(tag),
+        images: [],
+      };
+      hrefs.push(entry);
+      openAnchor = tag.name === 'a' ? entry : openAnchor;
+    }
+
+    if (tag.name === 'img') addSrc(tag, attr(tag, 'src'), 'img');
+    else if (/^v:(fill|imagedata)$/.test(tag.name)) addSrc(tag, attr(tag, 'src'), tag.name);
+    else if (tag.name === 'link' && /icon/i.test(attr(tag, 'rel') || '')) {
+      addSrc(tag, attr(tag, 'href'), 'favicon');
+    }
+
+    const bg = attr(tag, 'background');
+    if (bg !== undefined && tag.name !== 'img') addSrc(tag, bg, 'background');
+
+    const style = attr(tag, 'style');
+    if (style) {
+      const re = /url\(\s*(['"]?)(.*?)\1\s*\)/gi;
+      let m;
+      while ((m = re.exec(style))) addSrc(tag, m[2], 'css-background');
+    }
+  }
+  return { hrefs, srcs };
+}
+
+function extractContentBlocks(text, lineOf) {
+  const re = /\bContentBlockBy(Key|ID|Name)\s*\(\s*("[^"]*"|'[^']*'|[^)\s,]+)/gi;
+  const blocks = [];
+  let m;
+  while ((m = re.exec(text))) {
+    const kindRaw = m[1].toLowerCase();
+    const kind = kindRaw === 'id' ? 'ContentBlockByID'
+      : kindRaw === 'key' ? 'ContentBlockByKey' : 'ContentBlockByName';
+    blocks.push({ type: kind, value: m[2].replace(/^["']|["']$/g, ''), line: lineOf(m.index) });
+  }
+  return blocks;
+}
+
+/* ------------------------------------------------------------------ */
+/* Validations                                                         */
+/* ------------------------------------------------------------------ */
+
+function aliasState(alias) {
+  if (alias === undefined) return { text: MISSING, missing: true };
+  if (alias.trim() === '') return { text: 'Missing (empty alias)', missing: true };
+  return { text: alias, missing: false };
+}
+
+function validateAlt(img) {
+  const issues = [];
+  if (img.type !== 'img') return { text: 'n/a', issues };
+  const linked = !!img.anchor;
+  if (img.alt === undefined) {
+    issues.push(issue('fail', 'Missing ALT'));
+    return { text: MISSING, issues, missing: true };
+  }
+  const trimmed = img.alt.trim();
+  if (trimmed === '') {
+    issues.push(issue(linked ? 'fail' : 'warn',
+      linked ? 'Empty ALT on linked image' : 'Empty ALT (decorative image?)'));
+    return { text: '(empty)', issues, empty: true };
+  }
+  if (PLACEHOLDER_ALTS.some((re) => re.test(trimmed))) {
+    issues.push(issue('fail', 'Placeholder ALT text'));
+    return { text: img.alt, issues, placeholder: true };
+  }
+  return { text: img.alt, issues };
+}
+
+function hrefUrlIssues(cls, raw) {
+  switch (cls.kind) {
+    case 'empty': return [issue('fail', raw === undefined ? 'Missing href attribute' : 'Empty href')];
+    case 'http': return [issue('fail', 'Non-HTTPS link (http://)')];
+    case 'invalid': return [issue('fail', 'Invalid href: ' + cls.reason)];
+    default: return [];
+  }
+}
+
+function srcUrlIssues(cls, entry) {
+  const label = entry.type === 'favicon' ? 'href' : 'SRC';
+  switch (cls.kind) {
+    case 'empty': return [issue('fail', entry.srcPresent ? 'Empty ' + label : 'Missing ' + label)];
+    case 'http': return [issue('warn', 'Non-HTTPS ' + label + ' (http://)')];
+    case 'invalid': return [issue('fail', 'Invalid ' + label + ': ' + cls.reason)];
+    default: return [];
+  }
+}
+
+function validateTracking(tags, bodyTag) {
+  const results = [];
+  for (const code of TRACKING_CODES) {
+    const found = tags.filter((t) => !t.closing && t.name === 'custom'
+      && (attr(t, 'name') || '').toLowerCase() === code
+      && (attr(t, 'type') || '').toLowerCase() === 'tracking');
+    const problems = [];
+    let status = 'OK';
+    if (found.length === 0) {
+      status = 'MISSING';
+      problems.push(issue('fail', 'Tracking code "' + code + '" is missing'));
+    } else {
+      const afterBody = bodyTag ? found.filter((t) => t.start > bodyTag.start) : [];
+      if (afterBody.length) {
+        status = 'INCORRECT PLACEMENT';
+        problems.push(issue('fail', 'Tracking code "' + code + '" is placed after the opening <body> tag'));
+      }
+      if (!bodyTag) {
+        problems.push(issue('warn', 'No <body> tag found; placement of "' + code + '" cannot be verified'));
+      }
+      if (found.length > 1) {
+        problems.push(issue('warn', 'Tracking code "' + code + '" appears ' + found.length + ' times'));
+      }
+    }
+    results.push({ code, status, found: found.length, problems });
+  }
+  return results;
+}
+
+function validateUnsubscribe(hrefs, blocks) {
+  const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
+  const unsubLinks = hrefs.filter((h) =>
+    norm(h.href) === '%%=redirectto(@urlorganic)=%%'
+    && (h.alias || '').trim().toLowerCase() === 'unsubscribe');
+  const hasBlock = blocks.length > 0;
+  const hasLink = unsubLinks.length > 0;
+  const problems = [];
+  if (!hasBlock) problems.push('No ContentBlockByKey()/ContentBlockByID() found');
+  if (!hasLink) {
+    problems.push('No href="%%=RedirectTo(@urlOrganic)=%%" with alias="unsubscribe" found');
+  }
+  return { ok: hasBlock && hasLink, hasBlock, hasLink, problems, message: UNSUB_REQUIRED_TEXT };
+}
+
+/* ------------------------------------------------------------------ */
+/* Main entry                                                          */
+/* ------------------------------------------------------------------ */
+
+function audit(source, fileName) {
+  const original = source.replace(/^\uFEFF/, '');
+  const noComments = stripComments(original);
+  const masked = maskAmpscriptBlocks(noComments);
+  const lineOf = makeLineLookup(original);
+  const tags = scanTags(masked);
+  const bodyTag = tags.find((t) => !t.closing && t.name === 'body') || null;
+
+  const { hrefs, srcs } = extractLinksAndImages(tags, lineOf);
+  const blocks = extractContentBlocks(noComments, lineOf);
+
+  // ---- HREF rows
+  const hrefRows = hrefs.map((h) => {
+    const cls = classifyUrl(h.href);
+    const al = aliasState(h.alias);
+    const urlIssues = hrefUrlIssues(cls, h.href);
+    const issues = [...urlIssues];
+    if (h.href !== undefined && h.href !== h.href.trim()) {
+      issues.push(issue('warn', 'href has leading/trailing whitespace'));
+    }
+    if (al.missing) issues.push(issue('fail', 'Missing Alias'));
+    if (!al.missing && /\s/.test(h.alias)) issues.push(issue('fail', 'Alias contains spaces'));
+    if (h.hidden) issues.push(issue('warn', 'Hidden link'));
+
+    let srcText;
+    let altText;
+    if (h.images.length === 0) {
+      srcText = TEXT_LINK;
+      altText = MISSING;
+      issues.push(issue('info', 'Text link (no SRC/ALT)'));
+    } else {
+      srcText = h.images.map((i) => (i.src === undefined || i.src.trim() === '' ? MISSING : i.src)).join(' | ');
+      altText = h.images.map((i) => validateAlt(i).text).join(' | ');
+      h.images.forEach((img) => {
+        validateAlt(img).issues.forEach((x) => issues.push(x));
+        srcUrlIssues(classifyUrl(img.src), img).forEach((x) => issues.push(x));
+      });
+    }
+    return {
+      href: h.href === undefined ? MISSING : (h.href === '' ? '(empty)' : h.href),
+      alias: al.text,
+      alt: altText,
+      src: srcText,
+      line: h.line,
+      kind: cls.kind,
+      urlIssues,
+      textLink: h.images.length === 0,
+      aliasMissing: al.missing,
+      altMissing: h.images.length === 0 || h.images.some((i) => i.type === 'img' && validateAlt(i).missing),
+      issues,
+    };
+  });
+
+  // ---- SRC rows
+  const srcRows = srcs.map((s) => {
+    const alt = validateAlt(s);
+    const issues = [...srcUrlIssues(classifyUrl(s.src), s), ...alt.issues];
+    const a = s.anchor;
+    const al = a ? aliasState(a.alias) : { text: MISSING, missing: true };
+    const hrefMissing = !a;
+    if (hrefMissing) issues.push(issue('warn', 'Missing HREF (image not linked)'));
+    else {
+      if (a.href === undefined || a.href.trim() === '') issues.push(issue('fail', 'Parent link has empty/missing href'));
+      if (al.missing) issues.push(issue('fail', 'Missing Alias'));
+    }
+    if (s.hidden) issues.push(issue('warn', 'Hidden image'));
+    if (s.type !== 'img') issues.push(issue('info', 'Source type: ' + s.type));
+    return {
+      src: s.src === undefined ? MISSING : (s.src === '' ? '(empty)' : s.src),
+      href: a ? (a.href === undefined ? MISSING : a.href === '' ? '(empty)' : a.href) : MISSING,
+      alias: al.text,
+      alt: alt.text,
+      line: s.line,
+      type: s.type,
+      hrefMissing,
+      aliasMissing: al.missing,
+      altMissing: !!alt.missing,
+      issues,
+    };
+  });
+
+  // ---- Alias validation
+  const aliasList = hrefs.map((h) => ({ alias: h.alias, line: h.line, href: h.href }))
+    .filter((x) => x.alias !== undefined && x.alias.trim() !== '');
+  const byName = new Map();
+  aliasList.forEach((x) => {
+    const key = x.alias.trim().toLowerCase();
+    if (!byName.has(key)) byName.set(key, []);
+    byName.get(key).push(x);
+  });
+  const duplicateAliases = [...byName.values()].filter((g) => g.length > 1)
+    .map((g) => ({ alias: g[0].alias, count: g.length, lines: g.map((x) => x.line) }));
+  const aliasesWithSpaces = aliasList.filter((x) => /\s/.test(x.alias));
+  const missingAliasLinks = hrefRows.filter((r) => r.aliasMissing);
+
+  // ---- ALT validation
+  const altList = srcRows.filter((r) => r.type === 'img').map((r) => ({
+    src: r.src, alt: r.alt, line: r.line, issues: r.issues.filter((i) => /ALT/.test(i.msg)),
+  }));
+
+  // ---- Tracking / unsub
+  const tracking = validateTracking(tags, bodyTag);
+  const trackingIssues = tracking.filter((t) => t.problems.some((p) => p.level === 'fail'));
+  const unsubscribe = validateUnsubscribe(hrefs, blocks);
+
+  // ---- HTTPS validation
+  const httpsFindings = hrefRows
+    .filter((r) => ['http', 'empty', 'invalid'].includes(r.kind))
+    .map((r) => ({ href: r.href, line: r.line, kind: r.kind, issues: r.urlIssues }));
+
+  // ---- Summary
+  const count = (rows, fn) => rows.filter(fn).length;
+  const summary = {
+    totalHrefs: hrefRows.length,
+    totalSrcs: srcRows.length,
+    totalAliases: aliasList.length,
+    duplicateAliases: duplicateAliases.length,
+    aliasesWithSpaces: aliasesWithSpaces.length,
+    missingAliases: missingAliasLinks.length,
+    missingAlts: count(srcRows, (r) => r.type === 'img' && r.altMissing),
+    emptyOrPlaceholderAlts: count(srcRows, (r) => r.issues.some((i) => i.level === 'fail' && /Empty ALT|Placeholder ALT/.test(i.msg))),
+    decorativeEmptyAlts: count(srcRows, (r) => r.issues.some((i) => i.level === 'warn' && /Empty ALT/.test(i.msg))),
+    missingHrefs: count(srcRows, (r) => r.hrefMissing),
+    missingSrcs: count(hrefRows, (r) => r.textLink),
+    imagesWithoutSrc: count(srcRows, (r) => r.src === MISSING || r.src === '(empty)'),
+    nonHttpsLinks: count(hrefRows, (r) => ['http', 'empty', 'invalid'].includes(r.kind)),
+    trackingIssues: trackingIssues.length,
+    contentBlocks: blocks.length,
+    contentBlockIssues: blocks.length === 0 ? 1 : 0,
+    unsubscribeIssues: unsubscribe.ok ? 0 : 1,
+  };
+
+  // Each check: FAIL breaks the audit, WARN only fails with --strict, INFO never does.
+  const checks = [
+    ['Total HREFs', summary.totalHrefs, 'info'],
+    ['Total SRCs', summary.totalSrcs, 'info'],
+    ['Total Aliases', summary.totalAliases, 'info'],
+    ['Duplicate Aliases', summary.duplicateAliases, 'fail'],
+    ['Aliases With Spaces', summary.aliasesWithSpaces, 'fail'],
+    ['Missing Aliases', summary.missingAliases, 'fail'],
+    ['Missing ALTs', summary.missingAlts, 'fail'],
+    ['Empty / Placeholder ALTs', summary.emptyOrPlaceholderAlts, 'fail'],
+    ['Empty ALT on unlinked images (decorative)', summary.decorativeEmptyAlts, 'warn'],
+    ['Missing HREFs (unlinked images)', summary.missingHrefs, 'warn'],
+    ['Missing SRCs (text links)', summary.missingSrcs, 'info'],
+    ['Images with missing/empty SRC', summary.imagesWithoutSrc, 'fail'],
+    ['Non-HTTPS / Empty / Invalid Links', summary.nonHttpsLinks, 'fail'],
+    ['Tracking Code Issues', summary.trackingIssues, 'fail'],
+    ['Content Block Issues', summary.contentBlockIssues, 'fail'],
+    ['Unsubscribe Issues', summary.unsubscribeIssues, 'fail'],
+  ].map(([name, value, severity]) => {
+    const isCount = severity !== 'info';
+    return { name, value, severity, result: !isCount ? 'INFO' : value === 0 ? 'PASS' : severity === 'warn' ? 'WARN' : 'FAIL' };
+  });
+
+  // Row-level failures not covered above (e.g. broken SRC URLs, hidden links).
+  const rowFailures = [...hrefRows, ...srcRows].filter((r) => r.issues.some((i) => i.level === 'fail')).length;
+
+  return {
+    file: fileName,
+    bodyLine: bodyTag ? lineOf(bodyTag.start) : null,
+    hrefRows, srcRows,
+    aliases: aliasList, duplicateAliases, aliasesWithSpaces, missingAliasLinks,
+    altList,
+    tracking,
+    contentBlocks: blocks,
+    unsubscribe,
+    httpsFindings,
+    lists: {
+      hrefsWithoutAlias: hrefRows.filter((r) => r.aliasMissing),
+      hrefsWithoutAlt: hrefRows.filter((r) => r.altMissing),
+      hrefsWithoutSrc: hrefRows.filter((r) => r.textLink),
+      srcsWithoutHref: srcRows.filter((r) => r.hrefMissing),
+      srcsWithoutAlias: srcRows.filter((r) => r.aliasMissing),
+      srcsWithoutAlt: srcRows.filter((r) => r.altMissing),
+    },
+    summary,
+    checks,
+    rowFailures,
+  };
+}
+
+function overallResult(report, strict) {
+  const failed = report.checks.some((c) => c.result === 'FAIL' || (strict && c.result === 'WARN'));
+  return failed || report.rowFailures > 0 ? 'FAIL' : 'PASS';
+}
+
+module.exports = { audit, overallResult, classifyUrl, UNSUB_REQUIRED_TEXT };
+
+};
+__defs["report"] = function (module, require) {
+'use strict';
+
+const { overallResult } = require('./audit');
+
+const esc = (s) => String(s).replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+const cell = (s) => '`' + esc(s).replace(/`/g, "'") + '`';
+
+function flag(text) {
+  return /^Missing|^\(empty\)$/.test(text) ? '**' + esc(text) + '**' : cell(text);
+}
+
+function statusText(issues) {
+  const shown = issues.filter((i) => i.level !== 'info' || issues.length === 1);
+  if (!shown.length) return 'OK';
+  const icon = { fail: 'FAIL', warn: 'WARN', info: 'INFO' };
+  return shown.map((i) => icon[i.level] + ': ' + i.msg).join('; ');
+}
+
+function table(headers, rows) {
+  if (!rows.length) return '_None_\n';
+  const out = ['| ' + headers.join(' | ') + ' |', '| ' + headers.map(() => '---').join(' | ') + ' |'];
+  rows.forEach((r) => out.push('| ' + r.join(' | ') + ' |'));
+  return out.join('\n') + '\n';
+}
+
+function toMarkdown(r, opts) {
+  const strict = !!(opts && opts.strict);
+  const result = overallResult(r, strict);
+  const L = [];
+  const h = (t) => L.push('\n## ' + t + '\n');
+
+  L.push('# Email QA Report');
+  L.push('');
+  L.push('- **File:** `' + r.file + '`');
+  L.push('- **Overall result:** **' + result + '**');
+
+  h('1. HREF Audit');
+  L.push(table(['#', 'Line', 'HREF', 'Alias', 'ALT', 'SRC', 'Status'],
+    r.hrefRows.map((x, i) => [i + 1, x.line, cell(x.href), flag(x.alias), flag(x.alt),
+      x.textLink ? '**' + esc(x.src) + '**' : cell(x.src), esc(statusText(x.issues))])));
+
+  h('2. SRC Audit');
+  L.push(table(['#', 'Line', 'SRC', 'HREF', 'Alias', 'ALT', 'Status'],
+    r.srcRows.map((x, i) => [i + 1, x.line, flag(x.src),
+      flag(x.href), flag(x.alias), flag(x.alt), esc(statusText(x.issues))])));
+
+  h('3. HREF and SRC Validation');
+  L.push('| Metric | Count |\n| --- | --- |');
+  L.push('| Total HREF Count | ' + r.summary.totalHrefs + ' |');
+  L.push('| Total SRC Count | ' + r.summary.totalSrcs + ' |');
+  L.push('| Total Alias Count | ' + r.summary.totalAliases + ' |');
+  const hrefList = (title, rows) => {
+    L.push('\n### ' + title + ' (' + rows.length + ')\n');
+    L.push(rows.length ? rows.map((x) => '- Line ' + x.line + ': ' + cell(x.href)).join('\n') : '_None_');
+  };
+  const srcList = (title, rows) => {
+    L.push('\n### ' + title + ' (' + rows.length + ')\n');
+    L.push(rows.length ? rows.map((x) => '- Line ' + x.line + ': ' + cell(x.src)).join('\n') : '_None_');
+  };
+  hrefList('HREFs without Alias', r.lists.hrefsWithoutAlias);
+  hrefList('HREFs without ALT', r.lists.hrefsWithoutAlt);
+  hrefList('HREFs without SRC', r.lists.hrefsWithoutSrc);
+  srcList('SRCs without HREF', r.lists.srcsWithoutHref);
+  srcList('SRCs without Alias', r.lists.srcsWithoutAlias);
+  srcList('SRCs without ALT', r.lists.srcsWithoutAlt);
+
+  h('4. Alias Validation');
+  L.push(table(['Line', 'Alias', 'Status'], r.aliases.map((a) => {
+    const dup = r.duplicateAliases.find((d) => d.alias.trim().toLowerCase() === a.alias.trim().toLowerCase());
+    const st = [];
+    if (/\s/.test(a.alias)) st.push('FAIL: contains spaces (use "' + a.alias.trim().replace(/\s+/g, '_') + '")');
+    if (dup) st.push('FAIL: duplicate (' + dup.count + 'x, lines ' + dup.lines.join(', ') + ')');
+    return [a.line, cell(a.alias), st.length ? esc(st.join('; ')) : 'OK'];
+  })));
+  L.push('\n**Missing aliases (' + r.missingAliasLinks.length + '):**\n');
+  L.push(r.missingAliasLinks.length
+    ? r.missingAliasLinks.map((x) => '- Line ' + x.line + ': ' + cell(x.href)).join('\n') : '_None_');
+  L.push('\n**Duplicate aliases (' + r.duplicateAliases.length + '):** '
+    + (r.duplicateAliases.length
+      ? r.duplicateAliases.map((d) => '`' + d.alias + '` x' + d.count).join(', ') : '_None_'));
+  L.push('\n**Aliases containing spaces (' + r.aliasesWithSpaces.length + '):** '
+    + (r.aliasesWithSpaces.length ? r.aliasesWithSpaces.map((a) => '`' + a.alias + '`').join(', ') : '_None_'));
+
+  h('5. ALT Validation');
+  L.push(table(['Line', 'SRC', 'ALT', 'Status'], r.altList.map((a) => [
+    a.line, cell(a.src), flag(a.alt), a.issues.length ? esc(a.issues.map((i) => i.msg).join('; ')) : 'OK'])));
+
+  h('6. Tracking Code Validation');
+  const trackingBad = r.tracking.some((t) => t.problems.some((p) => p.level === 'fail'));
+  L.push(table(['Tracking Code', 'Found', 'Status', 'Details'], r.tracking.map((t) => [
+    cell('<custom name="' + t.code + '" type="tracking"/>'), t.found,
+    t.status === 'OK' ? 'OK' : '**' + t.status + '**',
+    t.problems.length ? esc(t.problems.map((p) => p.msg).join('; ')).replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Before &lt;body&gt;'])));
+  if (trackingBad) L.push('\n**Tracking Code Placement Issue Found**');
+  if (r.bodyLine) L.push('\n_Opening `<body>` tag at line ' + r.bodyLine + '._');
+
+  h('7. Content Block Validation');
+  if (r.contentBlocks.length) {
+    L.push(table(['Line', 'Content Block Type', 'Value'],
+      r.contentBlocks.map((b) => [b.line, b.type, cell(b.value)])));
+  } else {
+    L.push('**No Content Block found in this email.**');
+  }
+
+  h('8. Unsubscribe Validation');
+  if (r.unsubscribe.ok) {
+    L.push('Unsubscribe implementation found: content block present and '
+      + '`href="%%=RedirectTo(@urlOrganic)=%%"` with `alias="unsubscribe"`.');
+  } else {
+    L.push('**Unsubscribe check failed:** ' + r.unsubscribe.problems.join('; ') + '\n');
+    L.push('```\n' + r.unsubscribe.message + '\n```');
+  }
+
+  h('9. HTTPS Validation');
+  L.push(table(['Line', 'HREF', 'Type', 'Finding'], r.httpsFindings.map((f) => [
+    f.line, cell(f.href), f.kind, esc(f.issues.map((i) => i.msg).join('; '))])));
+
+  h('10. Final QA Summary');
+  L.push('**Overall: ' + result + '**\n');
+  L.push(table(['Check', 'Count', 'Result'], r.checks.map((c) => [c.name, c.value, c.result])));
+  if (r.rowFailures) {
+    L.push('\n_' + r.rowFailures + ' row(s) in the HREF/SRC inventories contain at least one FAIL finding._');
+  }
+  L.push('\nLegend: FAIL = breaks the audit, WARN = fails only with `--strict`, INFO = informational.');
+  return L.join('\n') + '\n';
+}
+
+function toJson(r, opts) {
+  return JSON.stringify(Object.assign({ result: overallResult(r, !!(opts && opts.strict)) }, r), null, 2);
+}
+
+module.exports = { toMarkdown, toJson };
+
+};
+
+(function () {
+  var audit = __require('audit'), report = __require('report');
+  var $ = function (id) { return document.getElementById(id); };
+  var lastMd = '', lastJson = '';
+
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function inline(s) {
+    s = esc(s);
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|[\s(>])_([^_]+)_(?=[\s).,<]|$)/g, '$1<em>$2</em>');
+    return s.replace(/\b(FAIL|WARN|PASS|INFO)\b(?![^<]*<\/code>)/g, '<span class="$1">$1</span>');
+  }
+  function cells(line) {
+    return line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/)
+      .map(function (c) { return c.trim().replace(/\\\|/g, '|'); });
+  }
+  function render(md) {
+    var lines = md.split('\n'), out = [], i = 0;
+    while (i < lines.length) {
+      var l = lines[i];
+      if (l.indexOf('```') === 0) {
+        var buf = []; i++;
+        while (i < lines.length && lines[i].indexOf('```') !== 0) buf.push(lines[i++]);
+        i++; out.push('<pre>' + esc(buf.join('\n')) + '</pre>'); continue;
+      }
+      if (l.charAt(0) === '|') {
+        var head = cells(l); i += 2; var rows = [];
+        while (i < lines.length && lines[i].charAt(0) === '|') rows.push(cells(lines[i++]));
+        out.push('<div class="tablewrap"><table><thead><tr>' + head.map(function (c) { return '<th>' + inline(c) + '</th>'; }).join('') +
+          '</tr></thead><tbody>' + rows.map(function (r) {
+            return '<tr>' + r.map(function (c) { return '<td>' + inline(c) + '</td>'; }).join('') + '</tr>';
+          }).join('') + '</tbody></table></div>');
+        continue;
+      }
+      var h = /^(#{1,3}) (.*)$/.exec(l);
+      if (h) { out.push('<h' + h[1].length + '>' + inline(h[2]) + '</h' + h[1].length + '>'); i++; continue; }
+      if (/^- /.test(l)) {
+        var items = [];
+        while (i < lines.length && /^- /.test(lines[i])) items.push('<li>' + inline(lines[i++].slice(2)) + '</li>');
+        out.push('<ul>' + items.join('') + '</ul>'); continue;
+      }
+      if (l.trim() === '') { i++; continue; }
+      out.push('<p>' + inline(l) + '</p>'); i++;
+    }
+    return out.join('\n');
+  }
+
+  function stat(cls, value, label) {
+    return '<div class="stat ' + cls + '"><b>' + value + '</b><span>' + esc(label) + '</span></div>';
+  }
+  function dashboard(r) {
+    var fails = r.checks.filter(function (c) { return c.result === 'FAIL'; }).length;
+    var warns = r.checks.filter(function (c) { return c.result === 'WARN'; }).length;
+    var passes = r.checks.filter(function (c) { return c.result === 'PASS'; }).length;
+    $('stats').innerHTML =
+      stat('a', r.summary.totalHrefs, 'HREFs') + stat('b', r.summary.totalSrcs, 'SRCs') + stat('c', r.summary.totalAliases, 'Aliases') +
+      stat('pass', passes, 'Checks passed') + stat('warn', warns, 'Warnings') + stat('fail', fails, 'Checks failed');
+    $('checks').innerHTML = r.checks.map(function (c) {
+      return '<div class="chk"><span class="nm">' + esc(c.name) + '</span><span class="ct">' + c.value +
+        '</span><span class="pill ' + c.result + '">' + c.result + '</span></div>';
+    }).join('');
+    $('dash').className = 'on';
+  }
+
+  function run() {
+    var text = $('src').value;
+    if (!text.trim()) { $('src').focus(); return; }
+    var strict = $('strict').checked, opts = { strict: strict };
+    var r = audit.audit(text, 'pasted-email.html');
+    lastMd = report.toMarkdown(r, opts);
+    lastJson = report.toJson(r, opts);
+    var result = audit.overallResult(r, strict);
+    var v = $('verdict');
+    v.className = result;
+    v.innerHTML = '<div class="icon">' + (result === 'PASS' ? '&#10003;' : '&#10007;') + '</div><div><div class="big">Overall result: ' + result +
+      '</div><div class="sub">' + r.summary.totalHrefs + ' HREFs, ' + r.summary.totalSrcs + ' SRCs, ' + r.summary.totalAliases + ' aliases audited</div></div>';
+    dashboard(r);
+    $('report').innerHTML = render(lastMd);
+    $('actions').style.display = 'flex';
+    $('out').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // AMPscript is hidden entirely: blocks, inline expressions and %%variables%% are removed.
+  function previewHtml(src) {
+    var h = src.replace(/^\uFEFF/, '')
+      .replace(/%%\[[\s\S]*?\]%%/g, '')
+      .replace(/(\bhref\s*=\s*["'])\s*%%=[\s\S]*?=%%/gi, '$1#')
+      .replace(/%%=[\s\S]*?=%%/g, '')
+      .replace(/%%[A-Za-z_]\w*%%/g, '');
+    var inject = '<base target="_blank"><style>img{max-width:100%;height:auto;}</style>';
+    return /<head[^>]*>/i.test(h) ? h.replace(/<head[^>]*>/i, function (m) { return m + inject; }) : inject + h;
+  }
+  // Scale the whole email down when it is wider than the frame (e.g. fixed-width tables on Mobile).
+  function fitFrame() {
+    var f = $('frame'), d;
+    try { d = f.contentDocument; } catch (e) { return; }
+    if (!d || !d.documentElement) return;
+    var root = d.documentElement;
+    root.style.zoom = '';
+    var w = f.clientWidth, sw = root.scrollWidth;
+    if (sw > w + 1) root.style.zoom = (w / sw).toFixed(3);
+  }
+  $('frame').addEventListener('load', fitFrame);
+  window.addEventListener('resize', fitFrame);
+  function updatePreview() {
+    $('frame').srcdoc = previewHtml($('src').value);
+  }
+  function showPreview() {
+    if (!$('src').value.trim()) { $('src').focus(); return; }
+    $('preview').className = 'card on';
+    $('previewBtn').className = 'on';
+    updatePreview();
+    $('preview').scrollIntoView({ behavior: 'smooth' });
+  }
+  function setView(mobile) {
+    $('frame').className = mobile ? 'mobile' : '';
+    fitFrame();
+    $('vMobile').className = mobile ? 'on' : '';
+    $('vDesktop').className = mobile ? '' : 'on';
+  }
+  var previewTimer;
+  $('src').addEventListener('input', function () {
+    if ($('preview').className.indexOf('on') < 0) return;
+    clearTimeout(previewTimer); previewTimer = setTimeout(updatePreview, 300);
+  });
+  $('previewBtn').onclick = showPreview;
+  $('vDesktop').onclick = function () { setView(false); };
+  $('vMobile').onclick = function () { setView(true); };
+  $('vClose').onclick = function () { $('preview').className = 'card'; $('previewBtn').className = ''; };
+
+  function download(name, text, type) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: type }));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  $('run').onclick = run;
+  $('clear').onclick = function () { $('src').value = ''; $('src').focus(); };
+  $('src').addEventListener('keydown', function (e) { if (e.ctrlKey && e.key === 'Enter') run(); });
+  $('file').onchange = function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader(); rd.onload = function () { $('src').value = rd.result; run(); }; rd.readAsText(f);
+  };
+  $('copy').onclick = function () {
+    if (navigator.clipboard) navigator.clipboard.writeText(lastMd);
+    else { var t = document.createElement('textarea'); t.value = lastMd; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+    $('copy').textContent = 'Copied'; setTimeout(function () { $('copy').textContent = 'Copy report (Markdown)'; }, 1500);
+  };
+  $('dl').onclick = function () { download('email-qa-report.md', lastMd, 'text/markdown'); };
+  $('dljson').onclick = function () { download('email-qa-report.json', lastJson, 'application/json'); };
+
+  // ---- theme, footer
+  function setTheme(dark) {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    $('theme').textContent = dark ? 'Light mode' : 'Dark mode';
+    try { localStorage.setItem('sfmc-qa-theme', dark ? 'dark' : 'light'); } catch (e) { /* storage unavailable */ }
+  }
+  var saved = null;
+  try { saved = localStorage.getItem('sfmc-qa-theme'); } catch (e) { /* storage unavailable */ }
+  setTheme(saved === 'dark');
+  $('theme').onclick = function () { setTheme(document.documentElement.getAttribute('data-theme') !== 'dark'); };
+  $('year').textContent = $('year2').textContent = new Date().getFullYear();
+  $('rightsBtn').onclick = function () {
+    var p = $('rightsPanel');
+    p.className = p.className === 'on' ? '' : 'on';
+    if (p.className === 'on') p.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Good sample</title>
+<style>.hero { background-image: url('https://cdn.example.com/bg.png'); }</style>
+</head>
+<custom name="opencounter" type="tracking"/>
+<custom name="usermatch" type="tracking" />
+<body>
+%%[ SET @urlOrganic = "https://example.com/organic" ]%%
+<table role="presentation" width="600">
+  <tr><td>
+    <a href="https://example.com/home" alias="logo_home"><img src="https://cdn.example.com/logo.png" alt="Example Brand logo" width="120"></a>
+  </td></tr>
+  <tr><td>
+    <a href="%%=RedirectTo(concat('https://example.com/offer?id=', @offerId))=%%" alias="hero_banner"><img src="https://cdn.example.com/hero.jpg" alt="Save 20% on your first order"></a>
+  </td></tr>
+  <tr><td>
+    <a href="https://example.com/shop" alias="shop_now">Shop now</a> |
+    <a href="mailto:help@example.com" alias="email_support">Email support</a> |
+    <a href="tel:+18005550100" alias="call_support">Call us</a>
+  </td></tr>
+  <tr><td>
+    <img src="https://cdn.example.com/divider.png" alt="" width="600" height="2">
+  </td></tr>
+  <tr><td>
+    %%=ContentBlockByKey("footer_legal")=%%
+    <a href="%%=RedirectTo(@urlOrganic)=%%" alias="unsubscribe">Unsubscribe</a>
+  </td></tr>
+</table>
+</body>
+</html>
